@@ -5,8 +5,7 @@
 #include <imgui_impl_opengl3.h>
 
 #include "platform/opengl.hpp"
-
-#include "window.hpp"
+#include "platform/window.hpp"
 
 // A helper class for ImGui
 class GUI {

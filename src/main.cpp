@@ -28,6 +28,7 @@
 #include "platform/framebuffer.hpp"
 #include "platform/shader.hpp"
 #include "platform/texture.hpp"
+#include "platform/window.hpp"
 
 #include "rendering/camera.hpp"
 #include "rendering/light.hpp"
