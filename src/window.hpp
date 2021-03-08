@@ -1,7 +1,7 @@
 #pragma once
 
-#include "opengl.hpp"
-#include "glm/glm.hpp"
+#include "platform/opengl.hpp"
+#include <glm/glm.hpp>
 
 #include <string>
 

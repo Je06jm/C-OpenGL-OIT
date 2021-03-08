@@ -24,15 +24,18 @@
  * AMD: http://developer.amd.com/wordpress/media/2013/06/2041_final.pdf
 */
 
-#include "texture.hpp"
-#include "window.hpp"
-#include "model.hpp"
-#include "shader.hpp"
-#include "light.hpp"
-#include "camera.hpp"
-#include "framebuffer.hpp"
-#include "gui.hpp"
-#include "log.hpp"
+#include "platform/buffer.hpp"
+#include "platform/framebuffer.hpp"
+#include "platform/shader.hpp"
+#include "platform/texture.hpp"
+
+#include "rendering/camera.hpp"
+#include "rendering/light.hpp"
+#include "rendering/model.hpp"
+#include "rendering/transform.hpp"
+
+#include "helper/gui.hpp"
+#include "helper/log.hpp"
 
 #ifdef _WIN32
 #include <windows.h>

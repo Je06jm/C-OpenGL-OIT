@@ -1,6 +1,6 @@
 #include "window.hpp"
 
-#include "log.hpp"
+#include "helper/log.hpp"
 
 #include <stdio.h>
 
