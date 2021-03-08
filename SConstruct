@@ -56,8 +56,8 @@ def download(url, path):
     os.remove("temp.zip")
 
 if "get-dependecies" in COMMAND_LINE_TARGETS:
-    download("https://casual-effects.com/g3d/data10/research/model/dragon/dragon.zip", "res/dragon")
-    download("https://casual-effects.com/g3d/data10/common/model/crytek_sponza/sponza.zip", "res/sponza")
+    download("http://casual-effects.com/g3d/data10/research/model/dragon/dragon.zip", "res/dragon")
+    download("http://casual-effects.com/g3d/data10/common/model/crytek_sponza/sponza.zip", "res/sponza")
 
     print("Processing res/dragon/dragon.obj")
 

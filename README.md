@@ -14,16 +14,6 @@ or if you are on Windows
 python -m pip install scons
 ```
 
-## Building
-The build system that was chosen is the SCons build system. To build, open a terminal in the project directory and run
-```
-scons
-```
-To speed up build times, you can use the -j flag to specify the number of theads to use, just like make. For example:
-```
-scons -j4
-```
-
 ## Installing
 Due to restrictions with file size and github, the model files and textures (except for dragon.mtl) are not included. However, the build system will handle the downloading and extracting of the files. In the project directory run
 ```
@@ -40,3 +30,13 @@ sudo apt install libglfw3-dev
 
 ### Windows
 Download 64 bit GLFW3 from https://www.glfw.org/download. If using MSBuild tools use the files from any of the lib-vc*. If using GCC, use the files from lib-mingw-w64
+
+## Building
+The build system that was chosen is the SCons build system. To build, open a terminal in the project directory and run
+```
+scons
+```
+To speed up build times, you can use the -j flag to specify the number of theads to use, just like make. For example:
+```
+scons -j4
+```
