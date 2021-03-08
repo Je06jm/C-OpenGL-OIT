@@ -2,6 +2,6 @@
 
 // Helper header for OpenGL and GLFW
 
-#include <glad/glad.h>
 #include <GLFW/glfw3.h>
+#include <glad/glad.h>
 #undef APIENTRY
