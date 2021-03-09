@@ -31,7 +31,9 @@ void OpenGLMessage(GLenum source, GLenum type, GLuint id, GLenum severity,
 }
 
 Window::Window(int resX, int resY, const string &title, bool extraDebug) {
-  glfwInit();
+  if (!glfwInit()) {
+    critical("Failed to initialize GLFW 3\n");
+  }
 
   // Tell GLFW about what type of OpenGL context we want to create.
   // Also informs GLFW about the type of window we want to create
