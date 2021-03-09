@@ -2,30 +2,59 @@ import urllib.request
 import os
 import zipfile
 
+AddOption(
+    "--debug-opengl",
+    action="store_true",
+    dest="debug-opengl",
+    default=False,
+    help="Enables OpenGL debug logging"
+)
+
+AddOption(
+    "--debug-build",
+    action="store_true",
+    dest="debug-build",
+    default=False,
+    help="Enables debug logging"
+)
+
+AddOption(
+    "--glfw-linker-fix",
+    action="store_true",
+    dest="glfw-linker-fix",
+    default=False,
+    help="Links to glfw instead of glfw3"
+)
+
+env = Environment()
+
 libs = {
     "Windows" : [
         "glfw3dll"
     ],
     "Other" : [
-        "dl",
-        "glfw3",
-        "pthread"
+        "dl"
     ]
 }
+
+if GetOption("glfw-linker-fix"):
+    libs["Other"] += ["glfw"]
+else:
+    libs["Other"] += ["glfw3"]
+
+libs["Other"] += ["pthread"]
 
 flags = {
     "Windows" : [
         "/EHsc",
         "/O2",
-        "/DIS_RELEASE",
         "/I libs",
         "/I src"
     ],
     "Other" : [
         "-Isrc",
         "-Ilibs",
-        "-O2",
-        "-DIS_RELEASE"
+        "-O2"
     ]
 }
 
@@ -44,6 +73,12 @@ dirs = [
     "src/rendering",
     "libs"
 ]
+
+if not GetOption("debug-build"):
+    env.Append(CPPDEFINES=["IS_RELEASE"])
+
+if GetOption("debug-opengl"):
+    env.Append(CPPDEFINES=["DEBUG_OPENGL"])
 
 def download(url, path):
     print("Downloading " + url)
@@ -78,7 +113,6 @@ if "get-dependecies" in COMMAND_LINE_TARGETS:
     print("Done")
     quit()
 
-env = Environment()
 platform = "Other"
 truePlatform = "Other"
 

@@ -14,6 +14,12 @@ or if you are on Windows
 python -m pip install scons
 ```
 
+## Requirements
+* OpenGL 4.3
+* Anisotropic Filtering Extension
+* Shader Storages Buffer Objects Extension
+* Shader Atomic Counters Extension
+
 ## Installing
 Due to restrictions with file size and github, the model files and textures (except for dragon.mtl) are not included. However, the build system will handle the downloading and extracting of the files. In the project directory run
 ```
@@ -39,4 +45,15 @@ scons
 To speed up build times, you can use the -j flag to specify the number of theads to use, just like make. For example:
 ```
 scons -j4
+```
+In some linux distributions, linking to glfw3 will fail and must be linked to glfw. If this happens, add '--glfw-linker-fix" to the build command
+```
+scons --glfw-linker-fix
+```
+
+## Build Flags
+```
+--glfw-linker-fix       Links to glfw instead of glfw3
+--debug-build           Enables debug logging
+--debug-opengl          Enables OpenGL debug logging
 ```

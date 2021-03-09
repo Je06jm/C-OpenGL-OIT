@@ -47,11 +47,28 @@ Window::Window(int resX, int resY, const string &title, bool extraDebug) {
   // Creates the window and sets the OpenGL context as the current
   // context
   this->window = glfwCreateWindow(resX, resY, title.c_str(), nullptr, nullptr);
+  if (this->window == nullptr) {
+    critical("Failed to create OpenGL window. Make sure OpenGL 4.3 is supported\n");
+  }
+
   glfwMakeContextCurrent(this->window);
 
   // OpenGL function loader
   if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
     critical("Failed to initialize GLAD\n");
+  }
+
+  // Check for required OpenGL extensions
+  if (!GLAD_GL_ARB_texture_filter_anisotropic) {
+    critical("Your graphics card does not support anisotropic filtering. How did you get an OpenGL 4.3 context?!?\n");
+  }
+
+  if (!GLAD_GL_ARB_shader_storage_buffer_object) {
+    critical("Your graphics card does not support shader storages buffer objects\n");
+  }
+
+  if (!GLAD_GL_ARB_shader_atomic_counters) {
+    critical("Your graphics card does not support shader atomic counters\n");
   }
 
   if (extraDebug) {
@@ -63,6 +80,7 @@ Window::Window(int resX, int resY, const string &title, bool extraDebug) {
   // Sets up OpenGL to a known state
   glViewport(0, 0, resX, resY);
 
+  // Enable depth buffer and back-face culling
   glEnable(GL_DEPTH_TEST);
   glEnable(GL_CULL_FACE);
 

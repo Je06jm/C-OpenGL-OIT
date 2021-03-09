@@ -83,10 +83,6 @@ void BufferData::bind() { glBindBuffer(GL_ARRAY_BUFFER, this->buffer); }
 void BufferData::unbind() { glBindBuffer(GL_ARRAY_BUFFER, 0); }
 
 BufferStorage::BufferStorage(GLenum usage) {
-  // Check for SSBO support and exit if they are not
-  if (!GLAD_GL_ARB_shader_storage_buffer_object) {
-    critical("Cannot find extension GL_ARB_shader_storage_buffer_object\n");
-  }
   this->usage = usage;
 }
 
@@ -115,11 +111,6 @@ void BufferStorage::barrier() {
 }
 
 BufferCounter::BufferCounter(unsigned int resetValue, GLbitfield usage) {
-  // Checks for atomic counter support and exit if they are not
-  if (!GLAD_GL_ARB_shader_atomic_counters) {
-    critical("Cannot find extension GL_ARB_shader_atomic_counters\n");
-  }
-
   // Creates a counter
   this->bind();
   this->resetValue = resetValue;

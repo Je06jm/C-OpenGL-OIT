@@ -92,7 +92,11 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine,
 #else
 int main() {
 #endif
+#ifdef DEBUG_OPENGL
+  Window window(RES_X, RES_Y, "OIT OpenGL 4.3", true);
+#else
   Window window(RES_X, RES_Y, "OIT OpenGL 4.3");
+#endif
   GUI::setup(window);
 
   array<Framebuffer *, 1> fBuffers;
