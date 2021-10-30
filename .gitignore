@@ -6,6 +6,5 @@ OIT
 OIT.exe
 imgui.ini
 .sconsign.dblite
-glfw3.dll
-glfw3.lib
-glfw3dll.lib
+*.dll
+*.lib

@@ -1,4 +1,4 @@
-import urllib.request
+from requests import get
 import os
 import zipfile
 
@@ -82,7 +82,9 @@ if GetOption("debug-opengl"):
 
 def download(url, path):
     print("Downloading " + url)
-    urllib.request.urlretrieve(url, "temp.zip")
+    with open("temp.zip", "wb") as file:
+        response = get(url, headers={'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/35.0.1916.47 Safari/537.36'})
+        file.write(response.content)
 
     print("Extracting zip into " + path)
     with zipfile.ZipFile("temp.zip", "r") as zipFile:
