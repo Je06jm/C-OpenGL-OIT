@@ -112,6 +112,20 @@ if "get-dependecies" in COMMAND_LINE_TARGETS:
     
     fout.close()
 
+    print("Processing res/sponza/sponza.mtl")
+
+    fin = open("res/sponza/sponza.mtl", "r")
+    lines = fin.readlines()
+    fin.close()
+
+    fout = open("res/sponza/sponza.mtl", "w")
+
+    for line in lines:
+        line = line.replace("\\", "/")
+        fout.write(line)
+    
+    fout.close()
+
     print("Done")
     quit()
 
