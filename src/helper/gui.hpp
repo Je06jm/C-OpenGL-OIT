@@ -1,5 +1,7 @@
 #pragma once
 
+#include <memory>
+
 #include <imgui.h>
 #include <imgui_impl_glfw.h>
 #include <imgui_impl_opengl3.h>
@@ -12,7 +14,7 @@ class GUI {
 public:
   // Sets up ImGui
   // @param window The current window
-  static void setup(Window &window);
+  static void setup(std::shared_ptr<Window> window);
   // Cleans up ImGui
   static void cleanup();
 

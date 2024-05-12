@@ -120,6 +120,20 @@ void Shader::setUniformVec4(const string &name, const glm::vec4 value) {
   }
 }
 
+std::shared_ptr<Shader> Shader::CreateDefault(const string &vertex, const string &fragment) {
+  auto shader = std::shared_ptr<Shader>(new Shader);
+
+  shader->attachSource(vertex, GL_VERTEX_SHADER);
+  shader->attachSource(fragment, GL_FRAGMENT_SHADER);
+
+  if (!shader->build()) {
+    critical("Could not build shader (%s, %s)\n", vertex.c_str(),
+      fragment.c_str());
+  }
+
+  return shader;
+}
+
 const string Shader::readFile(const string &path) {
   string code;
   ifstream file;
@@ -230,17 +244,4 @@ bool Shader::build() {
   }
 
   return true;
-}
-
-DefaultShader::DefaultShader(const string &vertex, const string &fragment) {
-  this->vertex = vertex;
-  this->fragment = fragment;
-
-  // Attach vertex and fragment shaders, and build
-  this->attachSource(this->vertex, GL_VERTEX_SHADER);
-  this->attachSource(this->fragment, GL_FRAGMENT_SHADER);
-  if (!this->build()) {
-    critical("Could not build shader (%s, %s)\n", this->vertex.c_str(),
-             this->fragment.c_str());
-  }
 }

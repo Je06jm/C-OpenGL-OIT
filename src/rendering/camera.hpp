@@ -1,10 +1,12 @@
 #pragma once
 
+#include <memory>
+
 #include "rendering/transform.hpp"
 
 // Creates a camera object
 class Camera {
-public:
+private:
   /* Calculates the perspective matrix
    * @param FOV The field of view in degrees
    * @param aspect The aspect ratio calculated by (RESOLUTION_X/RESOLUTION_Y)
@@ -13,6 +15,7 @@ public:
    */
   Camera(float FOV, float aspect, float near, float far);
 
+public:
   // Only the position and scale are used
   Transform transform;
 
@@ -33,6 +36,16 @@ public:
   // Returns the perspective * view matrix
   // @returns The perspective * view matrix
   glm::mat4 getMatrix();
+
+  /* Calculates the perspective matrix
+   * @param FOV The field of view in degrees
+   * @param aspect The aspect ratio calculated by (RESOLUTION_X/RESOLUTION_Y)
+   * @param near The nearest distance from the camera that objects render
+   * @param far The farthest distance from the camera that objects render
+   */
+  inline static auto Create(float FOV, float aspect, float near, float far) {
+    return std::shared_ptr<Camera>(new Camera{FOV, aspect, near, far});
+  }
 
 private:
   glm::mat4 P;

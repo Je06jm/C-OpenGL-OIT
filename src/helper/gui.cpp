@@ -2,8 +2,8 @@
 
 GLFWwindow *glfwWindow = nullptr;
 
-void GUI::setup(Window &window) {
-  glfwWindow = window.getWindow();
+void GUI::setup(std::shared_ptr<Window> window) {
+  glfwWindow = window->getWindow();
 
   // Sets up ImGui context
   IMGUI_CHECKVERSION();
@@ -13,7 +13,7 @@ void GUI::setup(Window &window) {
   ImGui::StyleColorsDark();
 
   // Inits ImGui
-  ImGui_ImplGlfw_InitForOpenGL(window.getWindow(), true);
+  ImGui_ImplGlfw_InitForOpenGL(window->getWindow(), true);
   ImGui_ImplOpenGL3_Init();
 }
 

@@ -1,12 +1,16 @@
 #pragma once
 
+#include <memory>
+
 #include "platform/opengl.hpp"
 
 // Manages an OpenGL vertex array object
 class BufferArray {
-public:
+private:
   // Creates a vertex array object
   BufferArray();
+
+public:
   // Destroyes the vertex array object
   ~BufferArray();
 
@@ -43,6 +47,10 @@ public:
   // @returns The maximum number of attributes allowed
   static unsigned int getMaxAttributes();
 
+  inline static auto Create() {
+    return std::shared_ptr<BufferArray>(new BufferArray);
+  }
+
 private:
   GLuint vao;
 
@@ -54,11 +62,13 @@ private:
 // Buffer is not ment to be used directly. It only handles the
 // creating and destruction of a generic OpenGL buffer object
 class Buffer {
-public:
+protected:
   // Creates a generic buffer object
   Buffer();
+
+public:
   // Destroyes the buffer object
-  ~Buffer();
+  virtual ~Buffer();
 
   // Binds the buffer object
   virtual void bind();
@@ -71,7 +81,7 @@ protected:
 
 // Vertex data is uploaded and managed using this class
 class BufferData : public Buffer {
-public:
+private:
   /* Uploads data onto the GPU
    * @param size The length of the data
    * @param data The pointer to the data
@@ -79,21 +89,32 @@ public:
    */
   BufferData(size_t size, void *data, GLenum usage = GL_STATIC_DRAW);
 
+public:
   // Binds the buffer object
   void bind() override;
   // Unbinds the buffer object
   void unbind() override;
+
+  /* Uploads data onto the GPU
+   * @param size The length of the data
+   * @param data The pointer to the data
+   * @param usage OpenGL usage hint (GL_STATIC_DRAW)
+   */
+  inline static auto Create(size_t size, void* data, GLenum usage = GL_STATIC_DRAW) {
+    return std::shared_ptr<BufferData>(new BufferData{size, data, usage});
+  }
 };
 
 // This class manages OpenGL shader storage buffer objects.
 class BufferStorage : public Buffer {
-public:
+private:
   /* Checks for SSBO support. Does not define a initial size.
    * Use resize to create a buffer
    * @param usage OpenGL usage hint (GL_DYNAMIC_COPY)
    */
   BufferStorage(GLenum usage = GL_DYNAMIC_COPY);
 
+public:
   // Binds the buffer object
   void bind() override;
   // Unbinds the buffer object
@@ -117,13 +138,21 @@ public:
   // Sets a memory barrier for SSBOs
   void barrier();
 
+  /* Checks for SSBO support. Does not define a initial size.
+   * Use resize to create a buffer
+   * @param usage OpenGL usage hint (GL_DYNAMIC_COPY)
+   */
+  inline static auto Create(GLenum usage = GL_DYNAMIC_COPY) {
+    return std::shared_ptr<BufferStorage>(new BufferStorage{usage});
+  }
+
 private:
   GLenum usage;
 };
 
 // An OpenGL atomic counter is managed with this class
 class BufferCounter : public Buffer {
-public:
+private:
   /* Checks fot atomic counter support. Creates an atomic counter
    * @param resetValue The value to reset the counter to
    * @param usage OpenGL usage hint (GL_MAP_WRITE_BIT | GL_MAP_READ_BIT |
@@ -133,6 +162,7 @@ public:
                 GLbitfield usage = GL_MAP_WRITE_BIT | GL_MAP_READ_BIT |
                                    GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT);
 
+public:
   ~BufferCounter();
 
   // Bind the buffer object
@@ -152,6 +182,17 @@ public:
 
   // Sets the value of the atomic counter to the resetValue
   void reset();
+
+  /* Checks fot atomic counter support. Creates an atomic counter
+   * @param resetValue The value to reset the counter to
+   * @param usage OpenGL usage hint (GL_MAP_WRITE_BIT | GL_MAP_READ_BIT |
+   * GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT)
+   */
+  inline static auto Create(unsigned int resetValue = 0,
+                            GLbitfield usage = GL_MAP_WRITE_BIT | GL_MAP_READ_BIT |
+                                   GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT) {
+    return std::shared_ptr<BufferCounter>(new BufferCounter{resetValue, usage});
+  }
 
 private:
   // This makes the client wait for the fence. This is called

@@ -53,9 +53,9 @@ using namespace glm;
 #define TRANSPARENT_SHADER(s) s[2]
 #define COMBINE_SHADER(s) s[3]
 
-#define ABUFFER_COUNTER(a) ((BufferCounter *)a[0])
-#define ABUFFER_HEAD(a) ((BufferStorage *)a[1])
-#define ABUFFER_DATA(a) ((BufferStorage *)a[2])
+#define ABUFFER_COUNTER(a) (dynamic_pointer_cast<BufferCounter>(a[0]))
+#define ABUFFER_HEAD(a) (dynamic_pointer_cast<BufferStorage>(a[1]))
+#define ABUFFER_DATA(a) (dynamic_pointer_cast<BufferStorage>(a[2]))
 
 #define SPONZA(m) m[0]
 #define DRAGON(m) m[1]
@@ -95,28 +95,28 @@ int main() {
 #ifdef DEBUG_OPENGL
   Window window(RES_X, RES_Y, "OIT OpenGL 4.3", true);
 #else
-  Window window(RES_X, RES_Y, "OIT OpenGL 4.3");
+  auto window = Window::Create(RES_X, RES_Y, "OIT OpenGL 4.3");
 #endif
   GUI::setup(window);
 
-  array<Framebuffer *, 1> fBuffers;
-  array<TextureRender *, 2> gBuffers;
-  array<DefaultShader *, 4> shaders;
+  array<std::shared_ptr<Framebuffer>, 1> fBuffers;
+  array<std::shared_ptr<TextureRender>, 2> gBuffers;
+  array<std::shared_ptr<Shader>, 4> shaders;
 
-  BufferArray vao;
-  array<BufferData *, 1> dBuffers;
+  auto vao = BufferArray::Create();
+  array<std::shared_ptr<BufferData>, 1> dBuffers;
 
-  array<Buffer *, 3> aBuffers;
+  array<std::shared_ptr<Buffer>, 3> aBuffers;
 
   array<Light, 3> lights;
 
-  array<Model *, 2> models;
+  array<std::shared_ptr<Model>, 2> models;
 
   // Create the resources for the opaque pass
-  FRAMEBUFFER_OPAQUE(fBuffers) = new Framebuffer(RES_X, RES_Y);
+  FRAMEBUFFER_OPAQUE(fBuffers) = Framebuffer::Create(RES_X, RES_Y);
 
-  OPAQUE_COLOR(gBuffers) = new TextureRender(RES_X, RES_Y, GL_RGBA16F);
-  OPAQUE_DEPTH(gBuffers) = new TextureRender(RES_X, RES_Y, GL_R32F);
+  OPAQUE_COLOR(gBuffers) = TextureRender::Create(RES_X, RES_Y, GL_RGBA16F);
+  OPAQUE_DEPTH(gBuffers) = TextureRender::Create(RES_X, RES_Y, GL_R32F);
 
   FRAMEBUFFER_OPAQUE(fBuffers)->bind();
   FRAMEBUFFER_OPAQUE(fBuffers)->attach(OPAQUE_COLOR(gBuffers));
@@ -127,22 +127,22 @@ int main() {
   }
 
   // Create shaders
-  OPAQUE_SHADER(shaders) = new DefaultShader("res/shaders/solid/shader.vert",
+  OPAQUE_SHADER(shaders) = Shader::CreateDefault("res/shaders/solid/shader.vert",
                                              "res/shaders/solid/shader.frag");
 
-  COUNT_SHADER(shaders) = new DefaultShader(
+  COUNT_SHADER(shaders) = Shader::CreateDefault(
       "res/shaders/solid/shader.vert", "res/shaders/transparent/count.frag");
 
-  TRANSPARENT_SHADER(shaders) = new DefaultShader(
+  TRANSPARENT_SHADER(shaders) = Shader::CreateDefault(
       "res/shaders/solid/shader.vert", "res/shaders/transparent/shader.frag");
 
-  COMBINE_SHADER(shaders) = new DefaultShader(
+  COMBINE_SHADER(shaders) = Shader::CreateDefault(
       "res/shaders/combine/shader.vert", "res/shaders/combine/shader.frag");
 
   // Create resources for the transparency pass
-  aBuffers[0] = new BufferCounter();
-  aBuffers[1] = new BufferStorage();
-  aBuffers[2] = new BufferStorage();
+  aBuffers[0] = BufferCounter::Create();
+  aBuffers[1] = BufferStorage::Create();
+  aBuffers[2] = BufferStorage::Create();
 
   ABUFFER_COUNTER(aBuffers)->bind();
   ABUFFER_COUNTER(aBuffers)->setLocation(0);
@@ -193,24 +193,24 @@ int main() {
   }
 
   // Create resources for combine pass
-  vao.bind();
+  vao->bind();
 
   QUAD_POS(dBuffers) =
-      new BufferData(sizeof(quadPosition), (void *)quadPosition);
+      BufferData::Create(sizeof(quadPosition), (void *)quadPosition);
 
-  vao.setAttribute(0, 2, GL_FLOAT, 0, 0);
+  vao->setAttribute(0, 2, GL_FLOAT, 0, 0);
 
   // Load models and set transforms
-  SPONZA(models) = new Model("res/sponza/sponza.obj", "res/sponza/");
-  DRAGON(models) = new Model("res/dragon/dragon.obj", "res/dragon/");
+  SPONZA(models) = Model::Create("res/sponza/sponza.obj", "res/sponza/");
+  DRAGON(models) = Model::Create("res/dragon/dragon.obj", "res/dragon/");
 
   DRAGON(models)->transform.position = vec3(0.0f, -50.0f, 0.0f);
   DRAGON(models)->transform.scale = vec3(50.0f);
 
   // Create camera and set transform
-  Camera camera(70.0f, RES_X / (float)RES_Y, 10.0f, 3000.0f);
-  camera.transform.position.z = -75.0f;
-  camera.transform.position.y = -50.0f;
+  auto camera = Camera::Create(70.0f, RES_X / (float)RES_Y, 10.0f, 3000.0f);
+  camera->transform.position.z = -75.0f;
+  camera->transform.position.y = -50.0f;
 
   double currentTime = glfwGetTime();
   double lastTime = currentTime;
@@ -224,11 +224,11 @@ int main() {
 
   bool showBackside = false;
 
-  window.setClearColor(skyColor);
+  window->setClearColor(skyColor);
 
   // Loading is done. Show the window
-  window.showWindow(true);
-  while (!window.shouldClose()) {
+  window->showWindow(true);
+  while (!window->shouldClose()) {
     // Calculate delta time
     currentTime = glfwGetTime();
     deltaTime = currentTime - lastTime;
@@ -261,16 +261,16 @@ int main() {
           glm::vec3(radians(-deltaPosY * mouseSpeed),
                     radians(-deltaPosX * mouseSpeed * 0.666f), 0.0f);
 
-      camera.rotation += cameraRotation;
+      camera->rotation += cameraRotation;
 
       // Clamp camera rotation
       float PI = pi<float>();
       float PI_HALF = PI / 2.0f;
 
-      if (camera.rotation.x < -PI_HALF) {
-        camera.rotation.x = -PI_HALF;
-      } else if (camera.rotation.x > PI_HALF) {
-        camera.rotation.x = PI_HALF;
+      if (camera->rotation.x < -PI_HALF) {
+        camera->rotation.x = -PI_HALF;
+      } else if (camera->rotation.x > PI_HALF) {
+        camera->rotation.x = PI_HALF;
       }
 
       float speed = movementSpeed;
@@ -278,9 +278,9 @@ int main() {
       // Get camera vectors
       glm::vec3 forward, right, up;
 
-      forward = camera.getForward();
-      right = camera.getRight();
-      up = camera.getUp();
+      forward = camera->getForward();
+      right = camera->getRight();
+      up = camera->getUp();
 
       // Calculate final camera speed
       if (GUI::isKeyDown(GLFW_KEY_LEFT_SHIFT)) {
@@ -291,27 +291,27 @@ int main() {
       glm::vec3 deltaTranslate = glm::vec3(deltaTime * speed);
 
       if (GUI::isKeyDown(GLFW_KEY_W)) {
-        camera.transform.position += forward * deltaTranslate;
+        camera->transform.position += forward * deltaTranslate;
       }
 
       if (GUI::isKeyDown(GLFW_KEY_S)) {
-        camera.transform.position -= forward * deltaTranslate;
+        camera->transform.position -= forward * deltaTranslate;
       }
 
       if (GUI::isKeyDown(GLFW_KEY_A)) {
-        camera.transform.position += right * deltaTranslate;
+        camera->transform.position += right * deltaTranslate;
       }
 
       if (GUI::isKeyDown(GLFW_KEY_D)) {
-        camera.transform.position -= right * deltaTranslate;
+        camera->transform.position -= right * deltaTranslate;
       }
 
       if (GUI::isKeyDown(GLFW_KEY_E)) {
-        camera.transform.position += up * deltaTranslate;
+        camera->transform.position += up * deltaTranslate;
       }
 
       if (GUI::isKeyDown(GLFW_KEY_Q)) {
-        camera.transform.position -= up * deltaTranslate;
+        camera->transform.position -= up * deltaTranslate;
       }
     } else {
       GUI::captureMouse(false);
@@ -325,12 +325,12 @@ int main() {
       shader->bind();
 
       if ((shader != COMBINE_SHADER(shaders))) {
-        shader->setUniformMatrix("PV", camera.getMatrix());
+        shader->setUniformMatrix("PV", camera->getMatrix());
       }
 
       if ((shader == OPAQUE_SHADER(shaders)) ||
           (shader == TRANSPARENT_SHADER(shaders))) {
-        shader->setUniformVec3("viewPosition", camera.transform.position);
+        shader->setUniformVec3("viewPosition", camera->transform.position);
       }
     }
 
@@ -343,7 +343,7 @@ int main() {
     SPONZA(models)->draw(OPAQUE_SHADER(shaders));
 
     // Count pass
-    window.setDepthTest(false);
+    window->setDepthTest(false);
     OPAQUE_DEPTH(gBuffers)->bind(0);
 
     DRAGON(models)->draw(COUNT_SHADER(shaders));
@@ -359,7 +359,7 @@ int main() {
     DRAGON(models)->draw(TRANSPARENT_SHADER(shaders));
 
     // Combine pass
-    window.setDepthTest(true);
+    window->setDepthTest(true);
 
     FRAMEBUFFER_OPAQUE(fBuffers)->unbind();
 
@@ -372,9 +372,9 @@ int main() {
     COMBINE_SHADER(shaders)->setUniformTexture("opaqueColor", 0);
     ABUFFER_DATA(aBuffers)->barrier();
 
-    vao.bind();
+    vao->bind();
     glDrawArrays(GL_TRIANGLES, 0, 6);
-    vao.unbind();
+    vao->unbind();
 
     // Draw the GUI
     GUI::newFrame();
@@ -408,32 +408,7 @@ int main() {
     GUI::endFrame();
 
     // Swap framebuffers
-    window.update();
-  }
-
-  // Cleanup objects
-  for (auto &model : models) {
-    delete model;
-  }
-
-  for (auto &buffer : aBuffers) {
-    delete buffer;
-  }
-
-  for (auto &buffer : dBuffers) {
-    delete buffer;
-  }
-
-  for (auto &shader : shaders) {
-    delete shader;
-  }
-
-  for (auto &texture : gBuffers) {
-    delete texture;
-  }
-
-  for (auto &framebuffer : fBuffers) {
-    delete framebuffer;
+    window->update();
   }
 
   return 0;

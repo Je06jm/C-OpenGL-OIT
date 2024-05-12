@@ -1,5 +1,7 @@
 #pragma once
 
+#include <memory>
+
 #include "platform/shader.hpp"
 #include <glm/glm.hpp>
 
@@ -18,5 +20,5 @@ public:
    * @param shader The shader to upload the light data to
    * @param index The light index within the shader to upload to
    */
-  void set(Shader *shader, int index);
+  void set(std::shared_ptr<Shader> shader, int index);
 };

@@ -49,12 +49,14 @@ flags = {
         "/EHsc",
         "/O2",
         "/I libs",
-        "/I src"
+        "/I src",
+        "/std:c++17"
     ],
     "Other" : [
         "-Isrc",
         "-Ilibs",
-        "-O2"
+        "-O2",
+        "-std=c++17"
     ]
 }
 

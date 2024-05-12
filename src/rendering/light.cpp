@@ -4,7 +4,7 @@
 
 using namespace std;
 
-void Light::set(Shader *shader, int index) {
+void Light::set(std::shared_ptr<Shader> shader, int index) {
   // Calculate light name in the shader
   string name = string("lights[") + to_string(index) + "]";
 

@@ -28,7 +28,7 @@ using namespace glm;
 Model::Model(const string &path, const string &base) {
   info("Loading model: %s\n", path.c_str());
 
-  this->vao = new BufferArray();
+  this->vao = BufferArray::Create();
 
   // Adapted from
   // https://github.com/tinyobjloader/tinyobjloader#example-code-new-object-oriented-api
@@ -123,26 +123,26 @@ Model::Model(const string &path, const string &base) {
 
   // Position data
   this->buffers[0] =
-      new BufferData(sizeof(float) * positions.size(), positions.data());
+      BufferData::Create(sizeof(float) * positions.size(), positions.data());
   this->vao->setAttribute(0, 3, GL_FLOAT, 0, 0);
 
   // Normal data
   this->buffers[1] =
-      new BufferData(sizeof(float) * normals.size(), normals.data());
+      BufferData::Create(sizeof(float) * normals.size(), normals.data());
   this->vao->setAttribute(1, 3, GL_FLOAT, 0, 0);
 
   // UV data
-  this->buffers[2] = new BufferData(sizeof(float) * uvs.size(), uvs.data());
+  this->buffers[2] = BufferData::Create(sizeof(float) * uvs.size(), uvs.data());
   this->vao->setAttribute(4, 2, GL_FLOAT, 0, 0);
 
   // Color data
   this->buffers[3] =
-      new BufferData(sizeof(float) * colors.size(), colors.data());
+      BufferData::Create(sizeof(float) * colors.size(), colors.data());
   this->vao->setAttribute(5, 3, GL_FLOAT, 0, 0);
 
   // Upload material index data
   this->materialIndex =
-      new BufferData(sizeof(unsigned int) * mat_index.size(), mat_index.data());
+      BufferData::Create(sizeof(unsigned int) * mat_index.size(), mat_index.data());
   this->vao->setAttributeI(6, 1, GL_INT, 0, 0);
 
   string diffuseTexture;
@@ -169,7 +169,7 @@ Model::Model(const string &path, const string &base) {
     // Diffuse
     if (!diffuseTexture.empty()) {
       this->textureIndexes.push_back(this->textures.size());
-      this->textures.push_back(new Texture(base + diffuseTexture));
+      this->textures.push_back(Texture::Create(base + diffuseTexture));
       mask |= USE_DIFFUSE_TEXTURE;
     } else {
       this->textureIndexes.push_back(0);
@@ -178,7 +178,7 @@ Model::Model(const string &path, const string &base) {
     // Specular
     if (!specularTexture.empty()) {
       this->textureIndexes.push_back(this->textures.size());
-      this->textures.push_back(new Texture(base + specularTexture));
+      this->textures.push_back(Texture::Create(base + specularTexture));
       mask |= USE_SPECULAR_TEXTURE;
     } else {
       this->textureIndexes.push_back(0);
@@ -187,7 +187,7 @@ Model::Model(const string &path, const string &base) {
     // Alpha
     if (!alphaTexture.empty()) {
       this->textureIndexes.push_back(this->textures.size());
-      this->textures.push_back(new Texture(base + alphaTexture));
+      this->textures.push_back(Texture::Create(base + alphaTexture));
       mask |= USE_ALPHA_TEXTURE;
     } else {
       this->textureIndexes.push_back(0);
@@ -211,22 +211,7 @@ Model::Model(const string &path, const string &base) {
   }
 }
 
-Model::~Model() {
-  // Delete textures, buffers, and vertex attribute object
-  for (auto &tex : this->textures) {
-    delete tex;
-  }
-
-  delete this->materialIndex;
-
-  for (auto &buffer : this->buffers) {
-    delete buffer;
-  }
-
-  delete this->vao;
-}
-
-void Model::draw(Shader *shader) {
+void Model::draw(std::shared_ptr<Shader> shader) {
   shader->bind();
 
   // Calculates model matrix

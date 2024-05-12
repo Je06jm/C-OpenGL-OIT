@@ -4,10 +4,11 @@
 #include <glm/glm.hpp>
 
 #include <string>
+#include <memory>
 
 // A class to handle the OpenGL context and window
 class Window {
-public:
+private:
   /* Creates a window and an OpenGL 4.3 context
    * @param resX The window width
    * @param resY The window height
@@ -15,6 +16,8 @@ public:
    * @param extraDebug Enables OpenGL debug
    */
   Window(int resX, int resY, const std::string &title, bool extraDebug = false);
+
+public:
   ~Window();
 
   // Updates GLFW and swaps OpenGL buffers
@@ -40,6 +43,16 @@ public:
   // Enables/disables the depth test
   // @param test True enables depth testing
   void setDepthTest(bool test);
+
+  /* Creates a window and an OpenGL 4.3 context
+   * @param resX The window width
+   * @param resY The window height
+   * @param title The window title
+   * @param extraDebug Enables OpenGL debug
+   */
+  inline static auto Create(int resX, int resY, const std::string &title, bool extraDebug = false) {
+    return std::shared_ptr<Window>(new Window{resX, resY, title, extraDebug});
+  }
 
 private:
   GLFWwindow *window;

@@ -3,15 +3,18 @@
 #include "platform/opengl.hpp"
 #include <glm/glm.hpp>
 
+#include <memory>
 #include <map>
 #include <string>
 
 // A class to create a shader object and handle
 // shader data
 class Shader {
-public:
+private:
   // Creates shader object
   Shader();
+
+public:
   ~Shader();
 
   // Binds this as the current shader
@@ -81,6 +84,9 @@ public:
    */
   void setUniformVec4(const std::string &name, const glm::vec4 value);
 
+  // Creates a shader program with a vertex and fragment shader attached
+  static std::shared_ptr<Shader> CreateDefault(const std::string &vertex, const std::string &fragment);
+
 protected:
   /* A helper function that reads files
    * @param path The file path to read
@@ -101,19 +107,4 @@ protected:
 
 private:
   std::map<std::string, GLint> uniformLocations;
-};
-
-// The shader class for shaders with only a vertex and fragment
-// shader stages
-class DefaultShader : public Shader {
-public:
-  /* Creates a shader with a vertex and fragment shader stage
-   * @param vertex The file path for the vertex stage
-   * @param fragment The file path for the fragment stage
-   */
-  DefaultShader(const std::string &vertex, const std::string &fragment);
-
-private:
-  std::string vertex;
-  std::string fragment;
 };

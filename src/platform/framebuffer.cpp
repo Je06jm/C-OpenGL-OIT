@@ -20,7 +20,7 @@ Framebuffer::~Framebuffer() {
   glDeleteFramebuffers(1, &this->fbo);
 }
 
-void Framebuffer::attach(TextureRender *texture) {
+void Framebuffer::attach(std::shared_ptr<TextureRender> texture) {
   this->bind();
 
   glBindTexture(GL_TEXTURE_2D, texture->getID());
