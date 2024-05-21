@@ -95,7 +95,7 @@ int main() {
 #ifdef DEBUG_OPENGL
   Window window(RES_X, RES_Y, "OIT OpenGL 4.3", true);
 #else
-  auto window = Window::Create(RES_X, RES_Y, "OIT OpenGL 4.3");
+  auto window = Window::create(RES_X, RES_Y, "OIT OpenGL 4.3");
 #endif
   GUI::setup(window);
 
@@ -103,7 +103,7 @@ int main() {
   array<std::shared_ptr<TextureRender>, 2> gBuffers;
   array<std::shared_ptr<Shader>, 4> shaders;
 
-  auto vao = BufferArray::Create();
+  auto vao = BufferArray::create();
   array<std::shared_ptr<BufferData>, 1> dBuffers;
 
   array<std::shared_ptr<Buffer>, 3> aBuffers;
@@ -113,10 +113,10 @@ int main() {
   array<std::shared_ptr<Model>, 2> models;
 
   // Create the resources for the opaque pass
-  FRAMEBUFFER_OPAQUE(fBuffers) = Framebuffer::Create(RES_X, RES_Y);
+  FRAMEBUFFER_OPAQUE(fBuffers) = Framebuffer::create(RES_X, RES_Y);
 
-  OPAQUE_COLOR(gBuffers) = TextureRender::Create(RES_X, RES_Y, GL_RGBA16F);
-  OPAQUE_DEPTH(gBuffers) = TextureRender::Create(RES_X, RES_Y, GL_R32F);
+  OPAQUE_COLOR(gBuffers) = TextureRender::create(RES_X, RES_Y, GL_RGBA16F);
+  OPAQUE_DEPTH(gBuffers) = TextureRender::create(RES_X, RES_Y, GL_R32F);
 
   FRAMEBUFFER_OPAQUE(fBuffers)->bind();
   FRAMEBUFFER_OPAQUE(fBuffers)->attach(OPAQUE_COLOR(gBuffers));
@@ -140,9 +140,9 @@ int main() {
       "res/shaders/combine/shader.vert", "res/shaders/combine/shader.frag");
 
   // Create resources for the transparency pass
-  aBuffers[0] = BufferCounter::Create();
-  aBuffers[1] = BufferStorage::Create();
-  aBuffers[2] = BufferStorage::Create();
+  aBuffers[0] = BufferCounter::create();
+  aBuffers[1] = BufferStorage::create();
+  aBuffers[2] = BufferStorage::create();
 
   ABUFFER_COUNTER(aBuffers)->bind();
   ABUFFER_COUNTER(aBuffers)->setLocation(0);
@@ -196,19 +196,19 @@ int main() {
   vao->bind();
 
   QUAD_POS(dBuffers) =
-      BufferData::Create(sizeof(quadPosition), (void *)quadPosition);
+      BufferData::create(sizeof(quadPosition), (void *)quadPosition);
 
   vao->setAttribute(0, 2, GL_FLOAT, 0, 0);
 
   // Load models and set transforms
-  SPONZA(models) = Model::Create("res/sponza/sponza.obj", "res/sponza/");
-  DRAGON(models) = Model::Create("res/dragon/dragon.obj", "res/dragon/");
+  SPONZA(models) = Model::create("res/sponza/sponza.obj", "res/sponza/");
+  DRAGON(models) = Model::create("res/dragon/dragon.obj", "res/dragon/");
 
   DRAGON(models)->transform.position = vec3(0.0f, -50.0f, 0.0f);
   DRAGON(models)->transform.scale = vec3(50.0f);
 
   // Create camera and set transform
-  auto camera = Camera::Create(70.0f, RES_X / (float)RES_Y, 10.0f, 3000.0f);
+  auto camera = Camera::create(70.0f, RES_X / (float)RES_Y, 10.0f, 3000.0f);
   camera->transform.position.z = -75.0f;
   camera->transform.position.y = -50.0f;
 
