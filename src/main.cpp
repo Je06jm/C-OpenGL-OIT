@@ -93,7 +93,7 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine,
 int main() {
 #endif
 #ifdef DEBUG_OPENGL
-  Window window(RES_X, RES_Y, "OIT OpenGL 4.3", true);
+  auto window = Window::create(RES_X, RES_Y, "OIT OpenGL 4.3", true);
 #else
   auto window = Window::create(RES_X, RES_Y, "OIT OpenGL 4.3");
 #endif
