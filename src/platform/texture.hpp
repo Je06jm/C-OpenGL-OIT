@@ -21,7 +21,7 @@ public:
 
   // Read texture data from a file and uploads it to the GPU
   // @param path The path of the texture file
-  inline static auto Create(const std::string &path) {
+  inline static auto create(const std::string &path) {
     return std::shared_ptr<Texture>(new Texture(path));
   }
 
@@ -53,7 +53,7 @@ public:
    * @param resY The height of the texture
    * @param format The format OpenGL uses for the texture
    */
-  inline static auto Create(unsigned int resX, unsigned int resY, GLenum format) {
+  inline static auto create(unsigned int resX, unsigned int resY, GLenum format) {
     return std::shared_ptr<TextureRender>(new TextureRender{resX, resY, format});
   }
 

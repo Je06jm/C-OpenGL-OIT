@@ -73,7 +73,7 @@ Buffer::~Buffer() { glDeleteBuffers(1, &this->buffer); }
 void Buffer::bind() {}
 void Buffer::unbind() {}
 
-BufferData::BufferData(size_t size, void *data, GLenum usage) {
+BufferData::BufferData(size_t size, const void *data, GLenum usage) {
   this->bind();
   glBufferData(GL_ARRAY_BUFFER, size, data, usage);
 }

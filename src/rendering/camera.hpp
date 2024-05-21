@@ -43,7 +43,7 @@ public:
    * @param near The nearest distance from the camera that objects render
    * @param far The farthest distance from the camera that objects render
    */
-  inline static auto Create(float FOV, float aspect, float near, float far) {
+  inline static auto create(float FOV, float aspect, float near, float far) {
     return std::shared_ptr<Camera>(new Camera{FOV, aspect, near, far});
   }
 

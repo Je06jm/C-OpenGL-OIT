@@ -50,7 +50,7 @@ public:
    * @param title The window title
    * @param extraDebug Enables OpenGL debug
    */
-  inline static auto Create(int resX, int resY, const std::string &title, bool extraDebug = false) {
+  inline static auto create(int resX, int resY, const std::string &title, bool extraDebug = false) {
     return std::shared_ptr<Window>(new Window{resX, resY, title, extraDebug});
   }
 

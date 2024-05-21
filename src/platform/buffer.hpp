@@ -47,7 +47,7 @@ public:
   // @returns The maximum number of attributes allowed
   static unsigned int getMaxAttributes();
 
-  inline static auto Create() {
+  inline static auto create() {
     return std::shared_ptr<BufferArray>(new BufferArray);
   }
 
@@ -87,7 +87,7 @@ private:
    * @param data The pointer to the data
    * @param usage OpenGL usage hint (GL_STATIC_DRAW)
    */
-  BufferData(size_t size, void *data, GLenum usage = GL_STATIC_DRAW);
+  BufferData(size_t size, const void *data, GLenum usage = GL_STATIC_DRAW);
 
 public:
   // Binds the buffer object
@@ -100,7 +100,7 @@ public:
    * @param data The pointer to the data
    * @param usage OpenGL usage hint (GL_STATIC_DRAW)
    */
-  inline static auto Create(size_t size, void* data, GLenum usage = GL_STATIC_DRAW) {
+  inline static auto create(size_t size, const void* data, GLenum usage = GL_STATIC_DRAW) {
     return std::shared_ptr<BufferData>(new BufferData{size, data, usage});
   }
 };
@@ -142,7 +142,7 @@ public:
    * Use resize to create a buffer
    * @param usage OpenGL usage hint (GL_DYNAMIC_COPY)
    */
-  inline static auto Create(GLenum usage = GL_DYNAMIC_COPY) {
+  inline static auto create(GLenum usage = GL_DYNAMIC_COPY) {
     return std::shared_ptr<BufferStorage>(new BufferStorage{usage});
   }
 
@@ -188,7 +188,7 @@ public:
    * @param usage OpenGL usage hint (GL_MAP_WRITE_BIT | GL_MAP_READ_BIT |
    * GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT)
    */
-  inline static auto Create(unsigned int resetValue = 0,
+  inline static auto create(unsigned int resetValue = 0,
                             GLbitfield usage = GL_MAP_WRITE_BIT | GL_MAP_READ_BIT |
                                    GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT) {
     return std::shared_ptr<BufferCounter>(new BufferCounter{resetValue, usage});

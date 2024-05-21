@@ -36,7 +36,7 @@ public:
    * @param resX The width of the framebuffer
    * @param resY The height of the framebuffer
    */
-  inline static auto Create(unsigned int resX, unsigned int resY) {
+  inline static auto create(unsigned int resX, unsigned int resY) {
     return std::shared_ptr<Framebuffer>(new Framebuffer{resX, resY});
   }
 
