@@ -29,6 +29,14 @@ public:
    */
   GLint getUniformLocation(const std::string &name);
 
+  /* Determins if a uniform exists in the current shader
+   * @param name The name of the uniform
+   * @returns True if uniform exists, false otherwise
+   */
+  inline bool hasUniform(const std::string &name) {
+    return getUniformLocation(name) != -1;
+  }
+
   /* Uploads an unsigned int as the texture unit to use
    * @param name The uniform name
    * @param value The texture unit

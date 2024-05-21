@@ -208,7 +208,7 @@ void Shader::attachSource(const string &path, GLenum type) {
     char *infoLog = new char[logLength];
 
     glGetShaderInfoLog(shader, logLength, NULL, infoLog);
-    critical("Shader error(%s)\n", infoLog);
+    critical("Shader error(%s)\n%s", infoLog, shaderCode);
   }
 
   // Attach it to the shader program
