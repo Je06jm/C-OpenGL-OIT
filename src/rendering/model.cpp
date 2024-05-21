@@ -6,29 +6,14 @@
 
 #include <map>
 #include <vector>
+#include <unordered_map>
 
 using namespace tinyobj;
 using namespace std;
 using namespace glm;
 
-#define USE_DIFFUSE_TEXTURE (1 << 0)
-#define USE_SPECULAR_TEXTURE (1 << 1)
-#define USE_ALPHA_TEXTURE (1 << 2)
-
-#define POSITION_OFFSET 0
-#define NORMAL_OFFSET 1
-#define UV_OFFSET 2
-#define COLOR_OFFSET 3
-
-#define GET_POSITION(base) (base[POSITION_OFFSET])
-#define GET_NORMAL(base) (base[NORMAL_OFFSET])
-#define GET_UV(base) (base[UV_OFFSET])
-#define GET_COLOR(base) (base[COLOR_OFFSET])
-
 Model::Model(const string &path, const string &base) {
   info("Loading model: %s\n", path.c_str());
-
-  this->vao = BufferArray::Create();
 
   // Adapted from
   // https://github.com/tinyobjloader/tinyobjloader#example-code-new-object-oriented-api
@@ -40,13 +25,13 @@ Model::Model(const string &path, const string &base) {
 
   if (!reader.ParseFromFile(path, config)) {
     if (!reader.Error().empty()) {
-      critical("TinyObjReader: %s", reader.Error());
+      critical("TinyObjReader: %s\n", reader.Error());
     }
     critical("No such file: %s\n", path.c_str());
   }
 
   if (!reader.Warning().empty()) {
-    info("TinyObjReader: %s", reader.Warning());
+    info("TinyObjReader: %s\n", reader.Warning());
   }
 
   // Gets reader data
@@ -54,11 +39,15 @@ Model::Model(const string &path, const string &base) {
   auto &shapes = reader.GetShapes();
   auto &materials = reader.GetMaterials();
 
-  vector<float> positions;
-  vector<float> normals;
-  vector<float> uvs;
-  vector<float> colors;
-  vector<int> mat_index;
+  unordered_map<int, vector<float>> positions;
+  unordered_map<int, vector<float>> normals;
+  unordered_map<int, vector<float>> uvs;
+  unordered_map<int, vector<float>> colors;
+  unordered_map<int, Material> mats;
+
+  unordered_map<string, shared_ptr<Texture>> diffuseTextures;
+  unordered_map<string, shared_ptr<Texture>> specularTextures;
+  unordered_map<string, shared_ptr<Texture>> alphaTextures;
 
   bool hasUVs = attrib.texcoords.size() != 0;
   bool hasColors = attrib.colors.size() != 0;
@@ -75,139 +64,108 @@ Model::Model(const string &path, const string &base) {
       for (size_t v = 0; v < fv; v++) {
         index_t idx = shapes[s].mesh.indices[index + v];
 
+        int mat = shapes[s].mesh.material_ids[f];
+
+        auto &pos = positions[mat];
+        auto &norm = normals[mat];
+        auto &uv = uvs[mat];
+        auto &color = colors[mat];
+
         // Unpack position data
-        positions.push_back(attrib.vertices[3 * idx.vertex_index + 0]);
-        positions.push_back(attrib.vertices[3 * idx.vertex_index + 1]);
-        positions.push_back(attrib.vertices[3 * idx.vertex_index + 2]);
+        pos.push_back(attrib.vertices[3 * idx.vertex_index + 0]);
+        pos.push_back(attrib.vertices[3 * idx.vertex_index + 1]);
+        pos.push_back(attrib.vertices[3 * idx.vertex_index + 2]);
 
         // Unpack normal data
-        normals.push_back(attrib.normals[3 * idx.normal_index + 0]);
-        normals.push_back(attrib.normals[3 * idx.normal_index + 1]);
-        normals.push_back(attrib.normals[3 * idx.normal_index + 2]);
+        norm.push_back(attrib.normals[3 * idx.normal_index + 0]);
+        norm.push_back(attrib.normals[3 * idx.normal_index + 1]);
+        norm.push_back(attrib.normals[3 * idx.normal_index + 2]);
 
         // Unpack UV data
         if (hasUVs) {
-          uvs.push_back(attrib.texcoords[2 * idx.texcoord_index + 0]);
-          uvs.push_back(attrib.texcoords[2 * idx.texcoord_index + 1]);
+          uv.push_back(attrib.texcoords[2 * idx.texcoord_index + 0]);
+          uv.push_back(attrib.texcoords[2 * idx.texcoord_index + 1]);
         } else {
-          uvs.push_back(0.0f);
-          uvs.push_back(0.0f);
+          uv.push_back(0.0f);
+          uv.push_back(0.0f);
         }
 
         // Unpack color data
         if (hasColors) {
-          colors.push_back(attrib.colors[3 * idx.vertex_index + 0]);
-          colors.push_back(attrib.colors[3 * idx.vertex_index + 1]);
-          colors.push_back(attrib.colors[3 * idx.vertex_index + 2]);
+          color.push_back(attrib.colors[3 * idx.vertex_index + 0]);
+          color.push_back(attrib.colors[3 * idx.vertex_index + 1]);
+          color.push_back(attrib.colors[3 * idx.vertex_index + 2]);
         } else {
-          colors.push_back(0.8f);
-          colors.push_back(0.8f);
-          colors.push_back(0.8f);
+          color.push_back(0.8f);
+          color.push_back(0.8f);
+          color.push_back(0.8f);
         }
-
-        int mat = shapes[s].mesh.material_ids[f];
-        if (mat < 0) {
-          info("Material index: %i\n", mat);
-        }
-        mat_index.push_back(shapes[s].mesh.material_ids[f]);
       }
       index += fv;
     }
   }
 
-  // Get the number of verticies
-  this->count = positions.size() / 3;
-
-  // Upload model data
-  this->vao->bind();
-
-  // Position data
-  this->buffers[0] =
-      BufferData::Create(sizeof(float) * positions.size(), positions.data());
-  this->vao->setAttribute(0, 3, GL_FLOAT, 0, 0);
-
-  // Normal data
-  this->buffers[1] =
-      BufferData::Create(sizeof(float) * normals.size(), normals.data());
-  this->vao->setAttribute(1, 3, GL_FLOAT, 0, 0);
-
-  // UV data
-  this->buffers[2] = BufferData::Create(sizeof(float) * uvs.size(), uvs.data());
-  this->vao->setAttribute(4, 2, GL_FLOAT, 0, 0);
-
-  // Color data
-  this->buffers[3] =
-      BufferData::Create(sizeof(float) * colors.size(), colors.data());
-  this->vao->setAttribute(5, 3, GL_FLOAT, 0, 0);
-
-  // Upload material index data
-  this->materialIndex =
-      BufferData::Create(sizeof(unsigned int) * mat_index.size(), mat_index.data());
-  this->vao->setAttributeI(6, 1, GL_INT, 0, 0);
-
-  string diffuseTexture;
-  string specularTexture;
-  string alphaTexture;
-
-  unsigned int mapMask = 0;
-
   // Unpack and process material data
   info("Material count: %i\n", materials.size());
-  for (size_t m = 0; m < materials.size(); m++) {
-    unsigned int mask = 0;
+  for (size_t mat = 0; mat < materials.size(); mat++) {
+    auto m = materials[mat];
 
     // Unpack texture data
-    diffuseTexture = materials[m].diffuse_texname;
-    specularTexture = materials[m].specular_texname;
-    alphaTexture = materials[m].alpha_texname;
+    string diffuseTexture = m.diffuse_texname;
+    string specularTexture = m.specular_texname;
+    string alphaTexture = m.alpha_texname;
 
     // See if the textures exists and if it needs to be
     // uploaded to the GPU
 
     // Texture exists and needs to be uploaded
 
-    // Diffuse
+    mats[mat] = Material{};
+
+    // Diffused
     if (!diffuseTexture.empty()) {
-      this->textureIndexes.push_back(this->textures.size());
-      this->textures.push_back(Texture::Create(base + diffuseTexture));
-      mask |= USE_DIFFUSE_TEXTURE;
+      if (diffuseTextures.find(diffuseTexture) == diffuseTextures.end()) {
+        diffuseTextures[diffuseTexture] = Texture::create(base + diffuseTexture);
+      }
+      mats[mat].diffused = diffuseTextures[diffuseTexture];
+      mats[mat].mask |= Material::MASK_USE_DIFFUSED;
     } else {
-      this->textureIndexes.push_back(0);
+      mats[mat].diffusedColor.values[0] = m.diffuse[0];
+      mats[mat].diffusedColor.values[1] = m.diffuse[1];
+      mats[mat].diffusedColor.values[2] = m.diffuse[2];
     }
 
     // Specular
     if (!specularTexture.empty()) {
-      this->textureIndexes.push_back(this->textures.size());
-      this->textures.push_back(Texture::Create(base + specularTexture));
-      mask |= USE_SPECULAR_TEXTURE;
+      if (specularTextures.find(specularTexture) == specularTextures.end()) {
+        specularTextures[specularTexture] = Texture::create(base + specularTexture);
+      }
+      mats[mat].specular = specularTextures[specularTexture];
+      mats[mat].mask |= Material::MASK_USE_SPECULAR;
     } else {
-      this->textureIndexes.push_back(0);
+      mats[mat].specularColor.values[0] = m.specular[0];
+      mats[mat].specularColor.values[1] = m.specular[1];
+      mats[mat].specularColor.values[2] = m.specular[2];
     }
 
     // Alpha
     if (!alphaTexture.empty()) {
-      this->textureIndexes.push_back(this->textures.size());
-      this->textures.push_back(Texture::Create(base + alphaTexture));
-      mask |= USE_ALPHA_TEXTURE;
+      if (alphaTextures.find(alphaTexture) == alphaTextures.end()) {
+        alphaTextures[alphaTexture] = Texture::create(base + alphaTexture);
+      }
+      mats[mat].alpha = alphaTextures[alphaTexture];
+      mats[mat].mask |= Material::MASK_USE_ALPHA;
     } else {
-      this->textureIndexes.push_back(0);
+      mats[mat].alphaValue = m.dissolve;
     }
+  }
 
-    // Unpack color values
-    this->diffuseColors.push_back(materials[m].diffuse[0]);
-    this->diffuseColors.push_back(materials[m].diffuse[1]);
-    this->diffuseColors.push_back(materials[m].diffuse[2]);
+  // Create meshes
+  for (auto [i, m] : mats) {
+    auto mesh = Mesh::create(positions[i], normals[i], uvs[i], colors[i]);
 
-    // Unpack specular color values
-    this->specularColors.push_back(materials[m].specular[0]);
-    this->specularColors.push_back(materials[m].specular[1]);
-    this->specularColors.push_back(materials[m].specular[2]);
-
-    // Unpack alpha values
-    this->alphaValues.push_back(materials[m].dissolve);
-
-    // Set maps mask
-    mapsMask.push_back(mask);
+    this->meshes.push_back(mesh);
+    this->materials.push_back(m);
   }
 }
 
@@ -218,51 +176,48 @@ void Model::draw(std::shared_ptr<Shader> shader) {
   mat4 M = this->transform.getMatrix();
   shader->setUniformMatrix("M", M);
 
-  this->vao->bind();
+  for (size_t i = 0; i < meshes.size(); i++) {
+    int t = 0;
+    auto &mesh = this->meshes[i];
+    auto &mat = this->materials[i];
 
-  // Upload texture data
-  int *textureList = new int[textures.size()];
-  for (GLuint i = 0; i < textures.size(); i++) {
-    if (this->textures[i] != nullptr) {
-      this->textures[i]->bind(i);
-      textureList[i] = i;
+    if (mat.mask & Material::MASK_USE_DIFFUSED) {
+      if (shader->hasUniform("matDiffuse")) {
+        shader->setUniformInt("matDiffuse", t);
+      }
+      mat.diffused->bind(t++);
     } else {
-      textureList[i] = 0;
+      if (shader->hasUniform("matDiffuseColor")) {
+        shader->setUniformVec3("matDiffuseColor", { mat.diffusedColor.r, mat.diffusedColor.g, mat.diffusedColor.b });
+      }
     }
+
+    if (mat.mask & Material::MASK_USE_SPECULAR) {
+      if (shader->hasUniform("matSpecular")) {
+        shader->setUniformInt("matSpecular", t);
+      }
+      mat.specular->bind(t++);
+    } else {
+      if (shader->hasUniform("matSpecularColor")) {
+        shader->setUniformVec3("matSpecularColor", { mat.specularColor.r, mat.specularColor.g, mat.specularColor.b });
+      }
+    }
+
+    if (mat.mask & Material::MASK_USE_ALPHA) {
+      if (shader->hasUniform("matAlpha")) {
+        shader->setUniformInt("matAlpha", t);
+      }
+      mat.alpha->bind(t++);
+    } else {
+      if (shader->hasUniform("matAlphaValue")) {
+        shader->setUniformFloat("matAlphaValue", mat.alphaValue);
+      }
+    }
+
+    if (shader->hasUniform("matMask")) {
+      shader->setUniformUInt("matMask", mat.mask);
+    }
+
+    mesh->draw();
   }
-
-  // Upload material textures
-  shader->setUniformIntv("matTextures", textureList, textures.size());
-  delete[] textureList;
-
-  shader->setUniformUIntv("textureIndexes", this->textureIndexes.data(),
-                          this->textureIndexes.size());
-
-  // Upload material maps and count
-  shader->setUniformUIntv("mapsMask", this->mapsMask.data(),
-                          this->mapsMask.size());
-  shader->setUniformUInt("matCount", this->mapsMask.size());
-
-  GLint uniform;
-
-  // Upload material colors
-  uniform = shader->getUniformLocation("matDiffuse");
-  if (uniform != -1) {
-    glUniform3fv(uniform, this->diffuseColors.size() / 3,
-                 this->diffuseColors.data());
-  }
-
-  uniform = shader->getUniformLocation("matSpecular");
-  if (uniform != -1) {
-    glUniform3fv(uniform, this->specularColors.size() / 3,
-                 this->specularColors.data());
-  }
-
-  shader->setUniformFloatv("matAlpha", this->alphaValues.data(),
-                           this->alphaValues.size());
-
-  // Draw
-  glDrawArrays(GL_TRIANGLES, 0, this->count);
-
-  this->vao->unbind();
 }

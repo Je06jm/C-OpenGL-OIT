@@ -10,9 +10,8 @@
 #include "platform/shader.hpp"
 #include "platform/texture.hpp"
 #include "rendering/transform.hpp"
+#include "rendering/mesh.hpp"
 
-// Manages vertex data and uploads the transform
-// data to a given shader
 class Model {
 private:
   /* Creates a model from a file
@@ -32,36 +31,42 @@ public:
    * @param path The model file path
    * @param base The base folder to use when looking for the material file
    */
-  inline static auto Create(const std::string &path, const std::string &base = "./") {
+  inline static auto create(const std::string &path, const std::string &base = "./") {
     return std::shared_ptr<Model>(new Model{path, base});
   }
 
 private:
-  std::shared_ptr<BufferArray> vao;
+  // Each material get's it's own mesh
+  std::vector<std::shared_ptr<Mesh>> meshes;
 
-  // Holds buffers. Position, Normal, UV, and Color
-  std::array<std::shared_ptr<BufferData>, 4> buffers;
-  GLsizei count;
+  struct Material {
+    std::shared_ptr<Texture> diffused = nullptr;
+    std::shared_ptr<Texture> specular = nullptr;
+    std::shared_ptr<Texture> alpha = nullptr;
 
-  /* Each material is held in an array stored in uniforms
-   * Each texture/color/value in the material is stored
-   * as an array, even when not used or does not exists.
-   * Each texture is only stored once and can be assigned
-   * to multiple sampler2Ds
-   */
+    union {
+      struct {
+        float r, g, b;
+      };
+      float values[3];
+    } diffusedColor;
 
-  // Hold material index
-  std::shared_ptr<BufferData> materialIndex;
+    union {
+      struct {
+        float r, g, b;
+      };
+      float values[3];
+    } specularColor;
 
-  // Texture format: Diffuse, Specular, and Alpha
-  std::vector<std::shared_ptr<Texture>> textures;
-  std::vector<unsigned int> mapsMask;
+    float alphaValue;
 
-  // Material values
-  std::vector<float> diffuseColors;
-  std::vector<float> specularColors;
-  std::vector<float> alphaValues;
+    static constexpr unsigned int MASK_USE_DIFFUSED = (1 << 0);
+    static constexpr unsigned int MASK_USE_SPECULAR = (1 << 1);
+    static constexpr unsigned int MASK_USE_ALPHA = (1 << 2);
 
-  // Texture index
-  std::vector<unsigned int> textureIndexes;
+    unsigned int mask = 0;
+  };
+
+  // Holds material data
+  std::vector<Material> materials;
 };
