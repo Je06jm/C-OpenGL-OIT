@@ -6,7 +6,6 @@ layout (location = 2) in vec3 aTangent;
 layout (location = 3) in vec3 aBitangent;
 layout (location = 4) in vec2 aUV;
 layout (location = 5) in vec3 aColor;
-layout (location = 6) in int aMatIndex;
 
 uniform mat4 PV;
 uniform mat4 V;
@@ -17,7 +16,6 @@ out vec3 fNormal;
 out vec2 fUV;
 out vec3 fColor;
 out float fZ;
-flat out int fMatIndex;
 
 out mat3 TBN;
 
@@ -29,7 +27,6 @@ void main() {
     fColor = aColor;
     vec4 zPos = V * M * vec4(aPosition, 1.0);
     fZ = zPos.z / zPos.w;
-    fMatIndex = aMatIndex;
 
     vec3 T = normalize(vec3(M * vec4(aTangent, 0.0)));
     vec3 B = normalize(vec3(M * vec4(aTangent, 0.0)));

@@ -1,10 +1,11 @@
-uniform sampler2D matTextures[32];
-uniform uint mapsMask[32];
-uniform vec3 matDiffuse[32];
-uniform vec3 matSpecular[32];
-uniform float matAlpha[32];
+uniform sampler2D matDiffuse;
+uniform vec3 matDiffuseColor;
+uniform sampler2D matSpecular;
+uniform vec3 matSpecularColor;
+uniform sampler2D matAlpha;
+uniform float matAlphaValue;
 
-uniform uint textureIndexes[80];
+uniform uint matMask;
 
 struct Light {
     vec3 position;
@@ -21,36 +22,25 @@ uniform vec3 viewPosition;
 #define USE_SPECULAR_TEXTURE (1<<1)
 #define USE_ALPHA_TEXTURE (1<<2)
 
-#define DIFFUSE_TEXTURE 0
-#define SPECULAR_TEXTURE 1
-#define ALPHA_TEXTUER 2
-#define STRIDE_TEXTURE 3
-
-#define TEXTURE_INDEX(text) matTextures[textureIndexes[text]]
-
 vec4 calculateLighting(float alphaClip) {
-    vec3 color = matDiffuse[fMatIndex];
-    vec3 specular = matSpecular[fMatIndex];
-    float alpha = matAlpha[fMatIndex];
+    vec3 color = matDiffuseColor;
+    vec3 specular = matSpecularColor;
+    float alpha = matAlphaValue;
 
-    int mapIndex = fMatIndex * STRIDE_TEXTURE;
-
-    uint samplerIndex = textureIndexes[mapIndex];
-
-    if ((mapsMask[fMatIndex] & USE_ALPHA_TEXTURE) != 0) {
-        alpha = texture(TEXTURE_INDEX(mapIndex+ALPHA_TEXTUER), fUV).r;
+    if ((matMask & USE_ALPHA_TEXTURE) != 0) {
+        alpha = texture(matAlpha, fUV).r;
     }
 
     if (alpha < alphaClip) {
         discard;
     }
 
-    if ((mapsMask[fMatIndex] & USE_DIFFUSE_TEXTURE) != 0) {
-       color = texture(TEXTURE_INDEX(mapIndex+DIFFUSE_TEXTURE), fUV).rgb;
+    if ((matMask & USE_DIFFUSE_TEXTURE) != 0) {
+       color = texture(matDiffuse, fUV).rgb;
     }
 
-    if ((mapsMask[fMatIndex] & USE_SPECULAR_TEXTURE) != 0) {
-        specular = texture(TEXTURE_INDEX(mapIndex+SPECULAR_TEXTURE), fUV).rgb;
+    if ((matMask & USE_SPECULAR_TEXTURE) != 0) {
+        specular = texture(matSpecular, fUV).rgb;
     }
 
     vec3 finalColor = globalAmbient * color;

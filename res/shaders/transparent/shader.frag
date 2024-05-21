@@ -8,7 +8,6 @@ in vec3 fPosition;
 in vec3 fNormal;
 in vec2 fUV;
 in vec3 fColor;
-flat in int fMatIndex;
 
 in mat3 TBN;
 

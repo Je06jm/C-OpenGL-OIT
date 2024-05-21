@@ -9,7 +9,6 @@ in vec3 fNormal;
 in vec2 fUV;
 in vec3 fColor;
 in float fZ;
-flat in int fMatIndex;
 
 #include <res/shaders/common/transparancy.frag>
 
